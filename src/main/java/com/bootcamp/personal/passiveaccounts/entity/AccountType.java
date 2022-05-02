@@ -21,7 +21,7 @@ public class AccountType {
     private String abbreviation;
     private String isoCurrencyCode;
     private BigDecimal interesRate;
-    private Integer transactionsNumber;
+    private Long transactionsNumber;
     private Double mainteanceCost;
     private short registrationStatus;
     private Date insertionDate;
