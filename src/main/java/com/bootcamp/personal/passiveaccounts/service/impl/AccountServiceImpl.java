@@ -2,12 +2,17 @@ package com.bootcamp.personal.passiveaccounts.service.impl;
 
 
 import com.bootcamp.personal.passiveaccounts.entity.Account;
+import com.bootcamp.personal.passiveaccounts.entity.CreditCard;
+import com.bootcamp.personal.passiveaccounts.entity.PersonalClient;
 import com.bootcamp.personal.passiveaccounts.repository.AccountRepository;
+import com.bootcamp.personal.passiveaccounts.repository.AccountTypeRepository;
 import com.bootcamp.personal.passiveaccounts.service.AccountService;
 import com.bootcamp.personal.passiveaccounts.util.Constant;
 import com.bootcamp.personal.passiveaccounts.util.handler.exceptions.BadRequestException;
+import com.bootcamp.personal.passiveaccounts.util.handler.exceptions.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -18,6 +23,13 @@ import java.util.Date;
 public class AccountServiceImpl implements AccountService {
 
     public final AccountRepository repository;
+
+    public final AccountTypeRepository accountTypeRepository;
+
+    public final WebClient webClient;
+
+    public final WebClient webClientCreditCard;
+
 
     @Override
     public Flux<Account> getAll() {
@@ -41,10 +53,36 @@ public class AccountServiceImpl implements AccountService {
                             "save.onErrorResume"
                     );
                 })
-                .switchIfEmpty(Mono.defer(() -> {
-                            account.setId(null);
-                            account.setInsertionDate(new Date());
-                            return repository.save(account);
+                .switchIfEmpty(accountTypeRepository.findById(account.getIdAccountType()).map(at -> {
+                            return webClient.get().uri("/algo/" + account.getIdClient())
+                                    .retrieve().bodyToMono(PersonalClient.class).map(c -> {
+                                        account.setId(null);
+                                        account.setInsertionDate(new Date());
+                                        if (at.getAbbreviation().equals(Constant.SAVE_TYPE_VIP)) {
+                                            if (c.getProfile().equals(Constant.CLIENT_TYPE_VIP)) {
+                                                return webClientCreditCard.get()
+                                                        .uri("personal/passive/saving_creditCard/" + c.getId())
+                                                        .retrieve().bodyToMono(CreditCard.class).map(card -> repository.save(account))
+                                                        .switchIfEmpty(Mono.error(new NotFoundException(
+                                                                "ID",
+                                                                "Client haven't one credit card",
+                                                                account.getIdClient(),
+                                                                AccountServiceImpl.class,
+                                                                "save.notFoundException"
+                                                        )));
+                                            } else {
+                                               return Mono.error(new NotFoundException(
+                                                        "ID",
+                                                        "Client is not VIP",
+                                                        account.getIdClient(),
+                                                        AccountServiceImpl.class,
+                                                        "save.notFoundException"
+                                                ));
+                                            }
+                                        } else {
+                                            return repository.save(account);
+                                        }
+                                    });
                         }
                 ))
                 .onErrorResume(e -> Mono.error(e)).cast(Account.class);

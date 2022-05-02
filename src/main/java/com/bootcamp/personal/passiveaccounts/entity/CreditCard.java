@@ -13,17 +13,24 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @Document
-public class AccountType {
+public class CreditCard {
 
     @Id
     private String id;
+
+    private String idClient;
     private String description;
     private String abbreviation;
     private String isoCurrencyCode;
+    private String debitCardNumber;
+
+    private BigDecimal creditCardLine;
     private BigDecimal interesRate;
-    private Long transactionsNumber;
-    private BigDecimal mainteanceCost;
-    private BigDecimal minimumBalance;
+    private Date paymentDate;
+    private Date expirationCardDate;
+    private Date cutDate;
+    private Date emitionDate;
+
     private short registrationStatus;
     private Date insertionDate;
     private String fk_insertionUser;
