@@ -1,9 +1,8 @@
 package com.bootcamp.personal.passiveaccounts.service.impl;
 
-
-import com.bootcamp.personal.passiveaccounts.MsPersonalPassiveAccountsApplication;
 import com.bootcamp.personal.passiveaccounts.entity.Account;
 import com.bootcamp.personal.passiveaccounts.entity.CreditCard;
+import com.bootcamp.personal.passiveaccounts.entity.GenericAccount;
 import com.bootcamp.personal.passiveaccounts.entity.PersonalClient;
 import com.bootcamp.personal.passiveaccounts.repository.AccountRepository;
 import com.bootcamp.personal.passiveaccounts.repository.AccountTypeRepository;
@@ -14,7 +13,7 @@ import com.bootcamp.personal.passiveaccounts.util.handler.exceptions.BadRequestE
 import com.bootcamp.personal.passiveaccounts.util.handler.exceptions.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.BodyInserters;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -79,7 +78,15 @@ public class AccountServiceImpl implements AccountService {
                                                     account.setRegistrationStatus((short) 1);
 
                                                     if (at.getAbbreviation().equals(Constant.ACCOUNT_TYPE_VIP)) {
-                                                        if (c.getProfile().equals(Constant.CLIENT_TYPE_VIP)) {
+                                                        if (!c.getProfile().equals(Constant.CLIENT_TYPE_VIP)) {
+                                                            return Mono.error(new NotFoundException(
+                                                                    "ID",
+                                                                    "Client is not VIP",
+                                                                    account.getIdClient(),
+                                                                    AccountServiceImpl.class,
+                                                                    "save.notFoundException"
+                                                            ));
+                                                        } else {
 
                                                             return webClient
                                                                     .getWebClient()
@@ -87,22 +94,35 @@ public class AccountServiceImpl implements AccountService {
                                                                     .uri("personal/active/credit_card/" + c.getId())
                                                                     .retrieve()
                                                                     .bodyToMono(CreditCard.class)
-                                                                    .flatMap(card -> repository.save(account))
                                                                     .switchIfEmpty(Mono.error(new NotFoundException(
                                                                             "ID",
                                                                             "Client doesn't have one credit card",
                                                                             account.getIdClient(),
                                                                             AccountServiceImpl.class,
                                                                             "save.notFoundException"
-                                                                    )));
-                                                        } else {
-                                                           return Mono.error(new NotFoundException(
-                                                                    "ID",
-                                                                    "Client is not VIP",
-                                                                    account.getIdClient(),
-                                                                    AccountServiceImpl.class,
-                                                                    "save.notFoundException"
-                                                            ));
+                                                                    )))
+                                                                    .flatMap(card ->
+                                                                            repository.save(account)
+                                                                                    .flatMap( acc -> {
+                                                                                        GenericAccount _acc = new GenericAccount();
+
+                                                                                        _acc.setAccountId(acc.getId());
+                                                                                        _acc.setAccountType(at.getAbbreviation());
+                                                                                        _acc.setAccountUrl("personal/passive/saving_account");
+                                                                                        _acc.setAccountIsoCurrencyCode("USD");
+                                                                                        _acc.setAccountFk_insertionUser(acc.getFk_insertionUser());
+                                                                                        _acc.setAccountInsertionTerminal(acc.getInsertionTerminal());
+
+                                                                                        return webClient
+                                                                                                .getWebClient()
+                                                                                                .post()
+                                                                                                .uri("/client/personal/"+c.getDocumentNumber()+"/accounts")
+                                                                                                .body(BodyInserters.fromValue(_acc))
+                                                                                                .retrieve()
+                                                                                                .bodyToMono(PersonalClient.class)
+                                                                                                .then(Mono.just(account));
+                                                                                    })
+                                                                    );
                                                         }
                                                     } else {
                                                         return repository.save(account);
