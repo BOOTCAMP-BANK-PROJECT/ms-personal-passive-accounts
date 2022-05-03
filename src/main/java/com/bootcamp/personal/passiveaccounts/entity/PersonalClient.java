@@ -7,6 +7,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -21,10 +22,13 @@ public class PersonalClient {
     private String documentNumber;
     private String firstName;
     private String lastName;
-    private String profile;
     private String residenceAddress;
+    private List<GenericAccount> accounts;
+    private String profile;
+
     private short registrationStatus;
     private Date insertionDate;
     private String fk_insertionUser;
     private String insertionTerminal;
+
 }

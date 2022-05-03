@@ -41,8 +41,11 @@ public class AccountTypeServiceImpl implements AccountTypeService {
                     );
                 })
                 .switchIfEmpty(Mono.defer(() -> {
+
                             accountType.setId(null);
                             accountType.setInsertionDate(new Date());
+                            accountType.setRegistrationStatus((short) 1);
+
                             return repository.save(accountType);
                         }
                 ))

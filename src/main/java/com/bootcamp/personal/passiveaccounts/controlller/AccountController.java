@@ -1,7 +1,7 @@
 package com.bootcamp.personal.passiveaccounts.controlller;
 
 import com.bootcamp.personal.passiveaccounts.entity.Account;
-import com.bootcamp.personal.passiveaccounts.service.AccountService;
+import com.bootcamp.personal.passiveaccounts.service.impl.AccountServiceImpl;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -14,14 +14,14 @@ import java.net.URI;
 
 @RestController
 @RequestMapping("personal/passive/saving_account")
-@Tag(name = "Personal Passive Product Saving Account Type", description = "Manage Personal Passive Product saving accounts type")
+@Tag(name = "Personal Passive Product Saving Account", description = "Manage Personal Passive Product saving accounts type")
 @CrossOrigin(value = {"*"})
 @RequiredArgsConstructor
 public class AccountController {
 
-    public final AccountService service;
+    public final AccountServiceImpl service;
 
-    @GetMapping//(value = "/fully")
+    @GetMapping
     public Mono<ResponseEntity<Flux<Account>>> getAll() {
         return Mono.just(
                 ResponseEntity.ok()
