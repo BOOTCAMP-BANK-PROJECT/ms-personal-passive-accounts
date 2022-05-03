@@ -57,58 +57,68 @@ public class AccountServiceImpl implements AccountService {
                 .map(sa -> {
                     throw new BadRequestException(
                             "ID",
-                            "Client have one ore more accounts",
+                            "Client has one or more accounts",
                             sa.getId(),
                             AccountServiceImpl.class,
                             "save.onErrorResume"
                     );
                 })
-                .switchIfEmpty(accountTypeRepository.findById(account.getIdAccountType())
-                        .flatMap(at ->
-                                webClient
-                                    .getWebClient("entrando desde c>>"+account.getIdClient())
-                                    .get()
-                                    .uri("/client/personal/find/" + account.getIdClient())
-                                    .retrieve()
-                                    .bodyToMono(PersonalClient.class)
-                                    .flatMap(c -> {
+                .switchIfEmpty(
+                        accountTypeRepository.findById(account.getIdAccountType())
+                                .flatMap(at ->
+                                        webClient
+                                                .getWebClient("entrando desde c>>"+account.getIdClient())
+                                                .get()
+                                                .uri("/client/personal/find/" + account.getIdClient())
+                                                .retrieve()
+                                                .bodyToMono(PersonalClient.class)
+                                                .flatMap(c -> {
 
-                                        account.setId(null);
-                                        account.setInsertionDate(new Date());
-                                        account.setRegistrationStatus((short) 1);
+                                                    account.setId(null);
+                                                    account.setInsertionDate(new Date());
+                                                    account.setRegistrationStatus((short) 1);
 
-                                        if (at.getAbbreviation().equals(Constant.ACCOUNT_TYPE_VIP)) {
-                                            if (c.getProfile().equals(Constant.CLIENT_TYPE_VIP)) {
+                                                    if (at.getAbbreviation().equals(Constant.ACCOUNT_TYPE_VIP)) {
+                                                        if (c.getProfile().equals(Constant.CLIENT_TYPE_VIP)) {
 
-                                                return webClient
-                                                        .getWebClient()
-                                                        .get()
-                                                        .uri("personal/active/credit_card/" + c.getId())
-                                                        .retrieve()
-                                                        .bodyToMono(CreditCard.class)
-                                                        .map(card -> repository.save(account))
-                                                        .switchIfEmpty(Mono.error(new NotFoundException(
-                                                                "ID",
-                                                                "Client haven't one credit card",
-                                                                account.getIdClient(),
-                                                                AccountServiceImpl.class,
-                                                                "save.notFoundException"
-                                                        )));
-                                            } else {
-                                               return Mono.error(new NotFoundException(
-                                                        "ID",
-                                                        "Client is not VIP",
-                                                        account.getIdClient(),
-                                                        AccountServiceImpl.class,
-                                                        "save.notFoundException"
-                                                ));
-                                            }
-                                        } else {
-                                            return repository.save(account);
-                                        }
-                                    })
+                                                            return webClient
+                                                                    .getWebClient()
+                                                                    .get()
+                                                                    .uri("personal/active/credit_card/" + c.getId())
+                                                                    .retrieve()
+                                                                    .bodyToMono(CreditCard.class)
+                                                                    .flatMap(card -> repository.save(account))
+                                                                    .switchIfEmpty(Mono.error(new NotFoundException(
+                                                                            "ID",
+                                                                            "Client doesn't have one credit card",
+                                                                            account.getIdClient(),
+                                                                            AccountServiceImpl.class,
+                                                                            "save.notFoundException"
+                                                                    )));
+                                                        } else {
+                                                           return Mono.error(new NotFoundException(
+                                                                    "ID",
+                                                                    "Client is not VIP",
+                                                                    account.getIdClient(),
+                                                                    AccountServiceImpl.class,
+                                                                    "save.notFoundException"
+                                                            ));
+                                                        }
+                                                    } else {
+                                                        return repository.save(account);
+                                                    }
+                                                })
 
-                ))
+                                )
+                                .switchIfEmpty(
+                                        Mono.error(new NotFoundException(
+                                        "ID",
+                                        "Account Type with id "+account.getIdAccountType()+" does not exists.",
+                                        account.getIdClient(),
+                                        AccountServiceImpl.class,
+                                        "save.notFoundException"
+                                )))
+                )
                 .onErrorResume(e -> Mono.error(e))
                 .cast(Account.class);
     }
