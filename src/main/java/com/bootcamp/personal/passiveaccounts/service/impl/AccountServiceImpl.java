@@ -64,14 +64,14 @@ public class AccountServiceImpl implements AccountService {
                     );
                 })
                 .switchIfEmpty(accountTypeRepository.findById(account.getIdAccountType())
-                        .map(at -> {
-                            return webClient
-                                    .getWebClient()
+                        .flatMap(at ->
+                                webClient
+                                    .getWebClient("entrando desde c>>"+account.getIdClient())
                                     .get()
                                     .uri("/client/personal/find/" + account.getIdClient())
                                     .retrieve()
                                     .bodyToMono(PersonalClient.class)
-                                    .map(c -> {
+                                    .flatMap(c -> {
 
                                         account.setId(null);
                                         account.setInsertionDate(new Date());
@@ -106,8 +106,8 @@ public class AccountServiceImpl implements AccountService {
                                         } else {
                                             return repository.save(account);
                                         }
-                                    });
-                        }
+                                    })
+
                 ))
                 .onErrorResume(e -> Mono.error(e))
                 .cast(Account.class);

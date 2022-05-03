@@ -1,6 +1,8 @@
 package com.bootcamp.personal.passiveaccounts.service;
 
 import com.bootcamp.personal.passiveaccounts.MsPersonalPassiveAccountsApplication;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -19,9 +21,15 @@ public class WebClientService {
         if(webClient == null) {
             this.webClient = webBuilder
                     .baseUrl(MsPersonalPassiveAccountsApplication.getApiGateway())
+                    .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                     .build();
         }
         return webClient;
+    }
+
+    public WebClient getWebClient(String message) {
+        System.out.println(message);
+        return getWebClient();
     }
 
 }
