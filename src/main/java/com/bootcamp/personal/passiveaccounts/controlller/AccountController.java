@@ -1,6 +1,7 @@
 package com.bootcamp.personal.passiveaccounts.controlller;
 
 import com.bootcamp.personal.passiveaccounts.entity.Account;
+import com.bootcamp.personal.passiveaccounts.entity.PersonalClient;
 import com.bootcamp.personal.passiveaccounts.service.impl.AccountServiceImpl;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,15 @@ public class AccountController {
                 ResponseEntity.ok()
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(service.getAll())
+        );
+    }
+
+    @GetMapping("/client")
+    public Mono<ResponseEntity<Mono<PersonalClient>>> getClient() {
+        return Mono.just(
+                ResponseEntity.ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(service.getPersonalClient())
         );
     }
 

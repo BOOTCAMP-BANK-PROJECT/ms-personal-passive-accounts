@@ -8,6 +8,7 @@ import com.bootcamp.personal.passiveaccounts.entity.PersonalClient;
 import com.bootcamp.personal.passiveaccounts.repository.AccountRepository;
 import com.bootcamp.personal.passiveaccounts.repository.AccountTypeRepository;
 import com.bootcamp.personal.passiveaccounts.service.AccountService;
+import com.bootcamp.personal.passiveaccounts.service.WebClientService;
 import com.bootcamp.personal.passiveaccounts.util.Constant;
 import com.bootcamp.personal.passiveaccounts.util.handler.exceptions.BadRequestException;
 import com.bootcamp.personal.passiveaccounts.util.handler.exceptions.NotFoundException;
@@ -27,13 +28,7 @@ public class AccountServiceImpl implements AccountService {
 
     public final AccountTypeRepository accountTypeRepository;
 
-    public final WebClient webClient = WebClient.builder()
-            .baseUrl(MsPersonalPassiveAccountsApplication.getApiGateway())
-            .build();
-
-    public final WebClient webClientCreditCard = WebClient.builder()
-            .baseUrl(MsPersonalPassiveAccountsApplication.getApiGateway())
-            .build();
+    public final WebClientService webClient;
 
 
     @Override
@@ -44,6 +39,15 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public Mono<Account> getById(String id) {
         return repository.findById(id);
+    }
+
+    public Mono<PersonalClient> getPersonalClient() {
+        return webClient
+                .getWebClient()
+                .get()
+                .uri("/client/personal/find/626b2053ad42f83f0c443e14")
+                .retrieve()
+                .bodyToMono(PersonalClient.class);
     }
 
     @Override
@@ -61,9 +65,8 @@ public class AccountServiceImpl implements AccountService {
                 })
                 .switchIfEmpty(accountTypeRepository.findById(account.getIdAccountType())
                         .map(at -> {
-                            return WebClient.builder()
-                                    .baseUrl(MsPersonalPassiveAccountsApplication.getApiGateway())
-                                    .build()
+                            return webClient
+                                    .getWebClient()
                                     .get()
                                     .uri("/client/personal/find/" + account.getIdClient())
                                     .retrieve()
@@ -77,7 +80,9 @@ public class AccountServiceImpl implements AccountService {
                                         if (at.getAbbreviation().equals(Constant.ACCOUNT_TYPE_VIP)) {
                                             if (c.getProfile().equals(Constant.CLIENT_TYPE_VIP)) {
 
-                                                return webClientCreditCard.get()
+                                                return webClient
+                                                        .getWebClient()
+                                                        .get()
                                                         .uri("personal/active/credit_card/" + c.getId())
                                                         .retrieve()
                                                         .bodyToMono(CreditCard.class)
