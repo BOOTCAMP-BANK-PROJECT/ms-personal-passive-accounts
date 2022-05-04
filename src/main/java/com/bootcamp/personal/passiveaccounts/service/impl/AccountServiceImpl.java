@@ -41,14 +41,6 @@ public class AccountServiceImpl implements AccountService {
         return repository.findById(id);
     }
 
-    public Mono<PersonalClient> getPersonalClient() {
-        return webClient
-                .getWebClient()
-                .get()
-                .uri("/client/personal/find/626b2053ad42f83f0c443e14")
-                .retrieve()
-                .bodyToMono(PersonalClient.class);
-    }
 
     @Override
     public Mono<Account> save(Account account) {

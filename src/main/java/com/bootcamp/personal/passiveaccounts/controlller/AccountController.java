@@ -31,14 +31,6 @@ public class AccountController {
         );
     }
 
-    @GetMapping("/client")
-    public Mono<ResponseEntity<Mono<PersonalClient>>> getClient() {
-        return Mono.just(
-                ResponseEntity.ok()
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body(service.getPersonalClient())
-        );
-    }
 
     @PostMapping
     public Mono<ResponseEntity<Account>> create(@RequestBody Account account) {
