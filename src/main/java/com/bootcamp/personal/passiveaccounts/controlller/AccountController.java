@@ -14,7 +14,7 @@ import reactor.core.publisher.Mono;
 import java.net.URI;
 
 @RestController
-@RequestMapping("personal/passive/saving_account")
+@RequestMapping("personal/passive/accounts")
 @Tag(name = "Personal Passive Product Saving Account", description = "Manage Personal Passive Product saving accounts type")
 @CrossOrigin(value = {"*"})
 @RequiredArgsConstructor

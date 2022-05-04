@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 import java.net.URI;
 
 @RestController
-@RequestMapping("personal/passive/saving_accountType")
+@RequestMapping("personal/passive/accounts/accountType")
 @Tag(name = "Personal Passive Product Saving AccountType Type", description = "Manage Personal Passive Product saving accountTypes type")
 @CrossOrigin(value = {"*"})
 @RequiredArgsConstructor
@@ -34,7 +34,7 @@ public class AccountTypeController {
     public Mono<ResponseEntity<AccountType>> create(@RequestBody AccountType accountType) {
 
         return service.save(accountType).map(p -> ResponseEntity
-                .created(URI.create("/AccountType/".concat(p.getId())))
+                .created(URI.create("/accountType/".concat(p.getId())))
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(p)
         );
@@ -43,7 +43,7 @@ public class AccountTypeController {
     @PutMapping
     public Mono<ResponseEntity<AccountType>> update(@RequestBody AccountType accountType) {
         return service.update(accountType)
-                .map(p -> ResponseEntity.created(URI.create("/AccountType/"
+                .map(p -> ResponseEntity.created(URI.create("/accountType/"
                                 .concat(p.getId())
                         ))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -54,7 +54,7 @@ public class AccountTypeController {
     @DeleteMapping
     public Mono<ResponseEntity<AccountType>> delete(@RequestBody String id) {
         return service.delete(id)
-                .map(p -> ResponseEntity.created(URI.create("/AccountType/"
+                .map(p -> ResponseEntity.created(URI.create("/accountType/"
                                 .concat(p.getId())
                         ))
                         .contentType(MediaType.APPLICATION_JSON)
