@@ -1,6 +1,6 @@
 spring:
   application:
-    name: ms-enterprise-active-loan
+    name: ms-personal-passive-accounts
   cloud:
     config:
       label: main
@@ -11,10 +11,10 @@ spring:
 # Swagger openapi.docs custom path
 springdoc:
   api-docs:
-    path: enterprise/active/loan/docs
+    path: personal/passive/accounts/docs
     enabled: true
   swagger-ui:
-    path: enterprise/active/loan/docs/ui
+    path: personal/passive/accounts/docs/ui
     enabled: true
   show-actuator: true
 

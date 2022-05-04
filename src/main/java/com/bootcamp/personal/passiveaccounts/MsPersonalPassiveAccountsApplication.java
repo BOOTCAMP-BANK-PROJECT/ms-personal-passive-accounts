@@ -26,7 +26,7 @@ public class MsPersonalPassiveAccountsApplication implements CommandLineRunner {
 			logger.info("Application name: " + env.getProperty("spring.application.name"));
 			logger.info("Properties file upload status: " + env.getProperty("my-own-app.properties.status"));
 			logger.info("Swagger: http://localhost:" + env.getProperty("server.port") +"/" + env.getProperty("springdoc.swagger-ui.path"));
-			logger.info("Api Gateway: " + apiGateway);
+			logger.info("API Gateway: " + apiGateway);
 
 			}
 
